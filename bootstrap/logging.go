@@ -5,10 +5,7 @@ import (
 	"os"
 	"strings"
 
-	slogattrs "github.com/go-slog/otelslog"
-	slogmulti "github.com/samber/slog-multi"
 	"github.com/uptrace/mcp/appconf"
-	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.uber.org/fx"
 )
 
@@ -16,7 +13,6 @@ type LoggerResults struct {
 	fx.Out
 
 	Logger *slog.Logger
-	Level  *slog.LevelVar
 }
 
 func NewSlog(conf *appconf.Config) LoggerResults {
@@ -35,17 +31,11 @@ func NewSlog(conf *appconf.Config) LoggerResults {
 		level.Set(slog.LevelInfo)
 	}
 
-	logger := slog.New(slogmulti.Fanout(
-		slogattrs.NewHandler(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-				Level: level,
-			}),
-		),
-		otelslog.NewHandler("uptrace", otelslog.WithSource(true)),
-	))
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: level,
+	}))
 
 	return LoggerResults{
 		Logger: logger,
-		Level:  level,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/uptrace/mcp/appconf"
@@ -39,9 +40,12 @@ func runStdioServer(
 		slog.Bool("debug", debug),
 	)
 
-	var transport mcp.Transport = &mcp.StreamableClientTransport{}
+	var transport mcp.Transport = &mcp.StdioTransport{}
 	if debug {
-		transport = &mcp.LoggingTransport{}
+		transport = &mcp.LoggingTransport{
+			Transport: &mcp.StdioTransport{},
+			Writer:    os.Stderr,
+		}
 	}
 
 	return server.Run(ctx, transport)
